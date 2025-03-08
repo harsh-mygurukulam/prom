@@ -8,13 +8,19 @@ pipeline {
 
     environment {
         TF_VAR_region = 'eu-north-1'                 // Terraform region variable
-        TF_VAR_key_name = 'ansible'                   // Terraform key pair
-        TF_IN_AUTOMATION = 'true'                   // Disable interactive prompts for Terraform
-        ANSIBLE_HOST_KEY_CHECKING = 'False'         // Disable SSH prompt for Ansible
-        ANSIBLE_REMOTE_USER = 'ubuntu'              // Remote SSH user for Ansible
+        TF_VAR_key_name = 'ansible'                  // Terraform key pair
+        TF_IN_AUTOMATION = 'true'                    // Disable interactive prompts for Terraform
+        ANSIBLE_HOST_KEY_CHECKING = 'False'          // Disable SSH prompt for Ansible
+        ANSIBLE_REMOTE_USER = 'ubuntu'               // Remote SSH user for Ansible
     }
 
     stages {
+        stage('Checkout Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/harsh-mygurukulam/prom.git'
+            }
+        }
+
         stage('Terraform Init') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
@@ -47,7 +53,7 @@ pipeline {
 
         stage('Run Ansible Playbook') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ssh-key-prometheus', keyFileVariable: 'SSH_KEY')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY')]) {
                     dir('prometheus-roles') {
                         sh 'chmod +x dynamic_inventory.sh'
                         sh './dynamic_inventory.sh'
@@ -68,16 +74,16 @@ pipeline {
                     sh 'terraform destroy -auto-approve'
                 }
             }
-            echo '⚙️ Pipeline execution completed.'
+            echo ' Pipeline execution completed.'
         }
         success {
-            echo '✅ Pipeline executed successfully!'
+            echo 'Pipeline executed successfully!'
         }
         failure {
-            echo '❌ Pipeline failed. Check the logs for details.'
+            echo 'pipeline failed. Check the logs for details.'
         }
         aborted {
-            echo '🚫 Pipeline was manually aborted.'
+            echo ' Pipeline was manually aborted.'
         }
     }
 }
