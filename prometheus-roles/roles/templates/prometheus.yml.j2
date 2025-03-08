@@ -1,17 +1,39 @@
+#global:
+  #scrape_interval: 15s
+  #evaluation_interval: 15s
+
+# scrape_configs:
+  #- job_name: 'jenkins'
+  #  static_configs:
+ #     - targets: ['18.215.155.250:9100']
+
+#alerting:
+  #alertmanagers:
+   # - static_configs:
+  #      - targets:
+ #           - 18.215.155.25:9093
+
+#rule_files:
+#  - /etc/prometheus/rules.yml
+
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'jenkins'
-    static_configs:
-      - targets: ['18.215.155.250:9100']
+  - job_name: 'node-exporters'
+    ec2_sd_configs:
+      - region: eu-north-1
+        port: 9100  # Node Exporter ka port
+        filters:
+          - name: "tag:Monitoring"
+            values: ["enabled"]  
 
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
-            - 18.215.155.25:9093
+            - "localhost:9093"  
 
 rule_files:
   - /etc/prometheus/rules.yml
