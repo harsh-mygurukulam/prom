@@ -75,6 +75,14 @@
     url: "{{ alertmanager_download_url }}"
     dest: /tmp/alertmanager.tar.gz
 
+- name: Create Alertmanager Directory
+  file:
+    path: "{{ alertmanager_install_dir }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+
 - name: Extract Alertmanager archive
   unarchive:
     src: /tmp/alertmanager.tar.gz
