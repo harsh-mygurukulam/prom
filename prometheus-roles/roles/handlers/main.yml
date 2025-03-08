@@ -1,0 +1,13 @@
+---
+- name: Restart Prometheus
+  systemd:
+    name: "{{ prometheus_service_name }}"
+    state: restarted
+    enabled: yes
+
+- name: Restart Alertmanager
+  systemd:
+    name: alertmanager
+    state: restarted
+    enabled: yes
+
