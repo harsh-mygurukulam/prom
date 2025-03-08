@@ -70,6 +70,25 @@
  # include_tasks: alertmanager.yml
 
 # ========== ALERTMANAGER INSTALLATION ==========
+- name: Create Alertmanager directory
+  file:
+    path: "{{ alertmanager_config_dir }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_user }}"
+    mode: '0755'
+
+- name: Deploy Alertmanager configuration
+  template:
+    src: alertmanager.yml.j2
+    dest: "{{ alertmanager_config_dir }}/alertmanager.yml"
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_user }}"
+    mode: '0644'
+  notify: Restart Alertmanager
+
+
+
 - name: Download Alertmanager tarball
   get_url:
     url: "{{ alertmanager_download_url }}"
