@@ -1,16 +1,16 @@
 global:
   resolve_timeout: 5m
-  smtp_smarthost: 'smtp.gmail.com:587'  
-  smtp_from:Harsh <'harshwardhandatascientist@gmail.com'>  
-  smtp_auth_username: 'harshwardhandatascientist@gmail.com'
-  smtp_auth_password: 'dvri gviu uskt xppa'
-  smtp_require_tls: true  
+  smtp_smarthost: "smtp.gmail.com:587"
+  smtp_from: "Harsh <harshwardhandatascientist@gmail.com>"  
+  smtp_auth_username: "harshwardhandatascientist@gmail.com"
+  smtp_auth_password: "dvri gviu uskt xppa"
+  smtp_require_tls: true
 
 route:
-  receiver: 'email-alert'
+  receiver: "email-alert"
 
 receivers:
-  - name: 'email-alert'
+  - name: "email-alert"
     email_configs:
-      - to: 'rajchauhan9584@gmail.com' 
+      - to: "rajchauhan9584@gmail.com"
         send_resolved: true
