@@ -27,7 +27,15 @@ scrape_configs:
         port: 9100  
         filters:
           - name: "tag:Monitoring"
-            values: ["enabled"]  
+            values: ["enabled"]
+    relabel_configs:
+      - source_labels: [__meta_ec2_public_ip]
+        target_label: __address__
+        replacement: "$1:9100"
+
+     
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: instance
 
 alerting:
   alertmanagers:
@@ -37,3 +45,4 @@ alerting:
 
 rule_files:
   - /etc/prometheus/rules.yml
+
