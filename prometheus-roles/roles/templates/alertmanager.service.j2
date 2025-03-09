@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 User=prometheus
 Group=prometheus
-ExecStart=/opt/alertmanager/alertmanager \
+ExecStart=/usr/local/bin/alertmanager \
     --config.file=/etc/alertmanager/alertmanager.yml \
     --storage.path=/var/lib/prometheus/alertmanager
 Restart=always
