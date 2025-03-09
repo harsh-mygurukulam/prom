@@ -32,7 +32,7 @@
 - name: Move Prometheus binaries
   copy:
     src: "{{ prometheus_install_dir }}/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
-    dest: /usr/local/bin/{{ item }}
+    dest: /usr/local/bin/{{ item }}"
     owner: root
     group: root
     mode: '0755'
@@ -66,10 +66,8 @@
     enabled: yes
     state: started
 
-#- name: Install Alertmanager
- # include_tasks: alertmanager.yml
-
 # ========== ALERTMANAGER INSTALLATION ==========
+
 - name: Create Alertmanager directory
   file:
     path: "{{ alertmanager_config_dir }}"
@@ -77,41 +75,22 @@
     owner: "{{ prometheus_user }}"
     group: "{{ prometheus_user }}"
     mode: '0755'
-  
-  - name: Ensure Alertmanager binary is executable
-  file:
-    path: "/usr/local/bin/alertmanager"
-    mode: '0755'
-
-
-- name: Deploy Alertmanager configuration
-  template:
-    src: alertmanager.yml.j2
-    dest: "{{ alertmanager_config_dir }}/alertmanager.yml"
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_user }}"
-    mode: '0644'
-  notify: Restart Alertmanager
-
-
 
 - name: Download Alertmanager tarball
   get_url:
     url: "{{ alertmanager_download_url }}"
     dest: /tmp/alertmanager.tar.gz
 
-
-
 - name: Extract Alertmanager archive
   unarchive:
     src: /tmp/alertmanager.tar.gz
-    dest: "{{ prometheus_install_dir }}"
+    dest: "{{ alertmanager_install_dir }}"
     remote_src: yes
 
 - name: Move Alertmanager binaries
   copy:
-    src: "{{ prometheus_install_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64/{{ item }}"
-    dest: /usr/local/bin/{{ item }}
+    src: "{{ alertmanager_install_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64/{{ item }}"
+    dest: /usr/local/bin/{{ item }}"
     owner: root
     group: root
     mode: '0755'
@@ -119,6 +98,11 @@
   loop:
     - alertmanager
     - amtool
+
+- name: Ensure Alertmanager binary is executable
+  file:
+    path: "/usr/local/bin/alertmanager"
+    mode: '0755'
 
 - name: Deploy Alertmanager configuration
   template:
