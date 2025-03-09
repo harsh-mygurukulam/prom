@@ -4,6 +4,8 @@ resource "aws_instance" "public_instance" {
   subnet_id     = var.public_subnet_id
   key_name      = var.key_name
   vpc_security_group_ids = [var.public_sg_id]
+  iam_instance_profile = aws_iam_instance_profile.prometheus_instance_profile.name  # 🔥 Yahi Attach Ho Raha Hai
+
   tags = { Name = "public-instance" }
 }
 
@@ -13,6 +15,8 @@ resource "aws_instance" "private_instance" {
   subnet_id     = var.private_subnet_id
   key_name      = var.key_name
   vpc_security_group_ids = [var.private_sg_id]
+  iam_instance_profile = aws_iam_instance_profile.prometheus_instance_profile.name  # 🔥 Yahi Attach Ho Raha Hai
+
   tags = { Name = "private-instance" }
 }
 
