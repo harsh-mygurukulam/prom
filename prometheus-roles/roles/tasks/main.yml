@@ -77,6 +77,12 @@
     owner: "{{ prometheus_user }}"
     group: "{{ prometheus_user }}"
     mode: '0755'
+  
+  - name: Ensure Alertmanager binary is executable
+  file:
+    path: "/usr/local/bin/alertmanager"
+    mode: '0755'
+
 
 - name: Deploy Alertmanager configuration
   template:
@@ -94,13 +100,7 @@
     url: "{{ alertmanager_download_url }}"
     dest: /tmp/alertmanager.tar.gz
 
-- name: Create Alertmanager Directory
-  file:
-    path: "{{ alertmanager_install_dir }}"
-    state: directory
-    owner: prometheus
-    group: prometheus
-    mode: '0755'
+
 
 - name: Extract Alertmanager archive
   unarchive:
