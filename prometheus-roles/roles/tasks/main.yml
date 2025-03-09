@@ -76,6 +76,14 @@
     group: "{{ prometheus_user }}"
     mode: '0755'
 
+- name: Create Alertmanager installation directory
+  file:
+    path: "{{ alertmanager_install_dir }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_user }}"
+    mode: '0755'
+
 - name: Download Alertmanager tarball
   get_url:
     url: "{{ alertmanager_download_url }}"
