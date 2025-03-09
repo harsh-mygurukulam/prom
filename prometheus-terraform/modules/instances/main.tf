@@ -1,3 +1,52 @@
+resource "aws_iam_role" "prometheus_role" {
+  name = "PrometheusEC2Role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Service": "ec2.amazonaws.com" },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+
+resource "aws_iam_policy" "prometheus_policy" {
+  name        = "PrometheusEC2Policy"
+  description = "Allow Prometheus to discover EC2 instances"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["ec2:DescribeInstances", "ec2:DescribeTags"],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
+
+resource "aws_iam_role_policy_attachment" "attach_prometheus_policy" {
+  policy_arn = aws_iam_policy.prometheus_policy.arn
+  role       = aws_iam_role.prometheus_role.name
+}
+
+
+resource "aws_iam_instance_profile" "prometheus_instance_profile" {
+  name = "PrometheusInstanceProfile"
+  role = aws_iam_role.prometheus_role.name
+}
+
+
 resource "aws_instance" "public_instance" {
   ami           = var.ami_id
   instance_type = var.instance_type
