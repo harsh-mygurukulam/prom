@@ -1,3 +1,5 @@
 ---
 prometheus_user: prometheus
+alertmanager_service_name: alertmanager
+
 # vars file for tool
