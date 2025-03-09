@@ -95,12 +95,12 @@
     dest: "{{ alertmanager_install_dir }}"
     remote_src: yes
     extra_opts:
-      - --strip-components=1  # ✅ Ensure correct extraction path
+      - --strip-components=1  
 
 - name: Move Alertmanager binaries
   copy:
     src: "{{ alertmanager_install_dir }}/{{ item }}"
-    dest: "/usr/local/bin/{{ item }}"  # ✅ FIXED: Removed extra quote
+    dest: "/usr/local/bin/{{ item }}" 
     owner: root
     group: root
     mode: '0755'
