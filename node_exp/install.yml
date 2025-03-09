@@ -1,54 +1,63 @@
 ---
-- name: Download Node Exporter
-  get_url:
-    url: "{{ node_exporter_url }}"
-    dest: "/tmp/node_exporter.tar.gz"
+- name: Install Node Exporter on EC2
+  hosts: all
+  become: yes
+  vars:
+    node_exporter_version: "1.5.0"
+    node_exporter_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    node_exporter_install_dir: "/opt/node_exporter"
 
-- name: Create installation directory
-  file:
-    path: "{{ node_exporter_install_dir }}"
-    state: directory
-    mode: '0755'
+  tasks:
+    - name: Update package list
+      apt:
+        update_cache: yes
 
-- name: Extract Node Exporter
-  unarchive:
-    src: "/tmp/node_exporter.tar.gz"
-    dest: "{{ node_exporter_install_dir }}"
-    remote_src: yes
-    extra_opts: ["--strip-components=1"]
+    - name: Download Node Exporter
+      get_url:
+        url: "{{ node_exporter_url }}"
+        dest: "/tmp/node_exporter.tar.gz"
 
-- name: Move Node Exporter binary
-  copy:
-    src: "{{ node_exporter_install_dir }}/node_exporter"
-    dest: "/usr/local/bin/node_exporter"
-    mode: '0755'
-    remote_src: yes
+    - name: Create installation directory
+      file:
+        path: "{{ node_exporter_install_dir }}"
+        state: directory
+        mode: '0755'
 
----
-- name: Copy Node Exporter systemd service file
-  template:
-    src: node_exporter.service.j2
-    dest: /etc/systemd/system/node_exporter.service
+    - name: Extract Node Exporter
+      unarchive:
+        src: "/tmp/node_exporter.tar.gz"
+        dest: "{{ node_exporter_install_dir }}"
+        remote_src: yes
+        extra_opts: ["--strip-components=1"]
 
-- name: Reload systemd daemon
-  systemd:
-    daemon_reload: yes
+    - name: Move Node Exporter binary
+      command: mv "{{ node_exporter_install_dir }}/node_exporter" "/usr/local/bin/node_exporter"
+      args:
+        creates: "/usr/local/bin/node_exporter"
 
-- name: Enable and Start Node Exporter service
-  systemd:
-    name: node_exporter
-    enabled: yes
-    state: started
+    - name: Copy Node Exporter systemd service file
+      template:
+        src: node_exporter.service.j2
+        dest: /etc/systemd/system/node_exporter.service
 
----
-- name: Get Instance ID
-  shell: "curl -s http://169.254.169.254/latest/meta-data/instance-id"
-  register: instance_id
-  changed_when: false
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
 
-- name: Add Monitoring tag to EC2
-  amazon.aws.ec2_tag:
-    region: "eu-north-1"
-    resource: "{{ instance_id.stdout }}"
-    tags:
-      Monitoring: "enabled"
+    - name: Enable and Start Node Exporter service
+      systemd:
+        name: node_exporter
+        enabled: yes
+        state: started
+
+    - name: Get Instance ID
+      shell: "curl -s http://169.254.169.254/latest/meta-data/instance-id"
+      register: instance_id
+      changed_when: false
+
+    - name: Add Monitoring tag to EC2
+      amazon.aws.ec2_tag:
+        region: "eu-north-1"
+        resource: "{{ instance_id.stdout }}"
+        tags:
+          Monitoring: "enabled"
