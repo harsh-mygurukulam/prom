@@ -1,0 +1,8 @@
+plugin: amazon.aws.aws_ec2
+regions:
+  - eu-north-1
+keyed_groups:
+  - key: tags.Monitoring
+    prefix: tag
+filters:
+  tag:Monitoring: enabled  # Filter only instances with "Monitoring=enabled"

@@ -1,0 +1,54 @@
+---
+- name: Download Node Exporter
+  get_url:
+    url: "{{ node_exporter_url }}"
+    dest: "/tmp/node_exporter.tar.gz"
+
+- name: Create installation directory
+  file:
+    path: "{{ node_exporter_install_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Extract Node Exporter
+  unarchive:
+    src: "/tmp/node_exporter.tar.gz"
+    dest: "{{ node_exporter_install_dir }}"
+    remote_src: yes
+    extra_opts: ["--strip-components=1"]
+
+- name: Move Node Exporter binary
+  copy:
+    src: "{{ node_exporter_install_dir }}/node_exporter"
+    dest: "/usr/local/bin/node_exporter"
+    mode: '0755'
+    remote_src: yes
+
+---
+- name: Copy Node Exporter systemd service file
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and Start Node Exporter service
+  systemd:
+    name: node_exporter
+    enabled: yes
+    state: started
+
+---
+- name: Get Instance ID
+  shell: "curl -s http://169.254.169.254/latest/meta-data/instance-id"
+  register: instance_id
+  changed_when: false
+
+- name: Add Monitoring tag to EC2
+  amazon.aws.ec2_tag:
+    region: "eu-north-1"
+    resource: "{{ instance_id.stdout }}"
+    tags:
+      Monitoring: "enabled"
