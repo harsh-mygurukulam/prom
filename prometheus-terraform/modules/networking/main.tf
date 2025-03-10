@@ -62,6 +62,31 @@ resource "aws_route_table_association" "private" {
   subnet_id = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private.id
 }
+resource "aws_lb" "app_lb" {
+  name               = "app-load-balancer"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.alb_sg.id]
+  subnets            = var.public_subnet_ids
+
+  enable_deletion_protection = false
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.app_lb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "404 Not Found"
+      status_code  = "404"
+    }
+  }
+}
 
 output "vpc_id" {
   value = aws_vpc.main.id
