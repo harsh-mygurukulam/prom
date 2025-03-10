@@ -83,9 +83,15 @@ resource "aws_lb_target_group" "tool_tg" {
   }
 }
 
-resource "aws_lb_target_group_attachment" "tool_ec2" {
+resource "aws_lb_target_group_attachment" "private_ec2" {
   target_group_arn = aws_lb_target_group.tool_tg.arn
   target_id        = aws_instance.private_instance.id
+  port            = 80
+}
+
+resource "aws_lb_target_group_attachment" "public_ec2" {
+  target_group_arn = aws_lb_target_group.tool_tg.arn
+  target_id        = aws_instance.public_instance.id
   port            = 80
 }
 
