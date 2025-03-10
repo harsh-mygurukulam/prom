@@ -2,34 +2,36 @@
 - name: Install Node Exporter
   hosts: all
   become: true
-  vars_files:
-    - defaults/main.yml  # Load variables from vars/main.yml
   tasks:
     - name: Download Node Exporter
       get_url:
-        url: "{{ node_exporter_url }}"
+        url: "https://github.com/prometheus/node_exporter/releases/latest/download/node_exporter-1.7.0.linux-amd64.tar.gz"
         dest: "/tmp/node_exporter.tar.gz"
 
     - name: Create installation directory
       file:
-        path: "{{ node_exporter_install_dir }}"
+        path: "/opt/node_exporter"
         state: directory
         mode: '0755'
 
     - name: Extract Node Exporter
       unarchive:
         src: "/tmp/node_exporter.tar.gz"
-        dest: "{{ node_exporter_install_dir }}"
+        dest: "/opt/node_exporter"
         remote_src: yes
         extra_opts: ["--strip-components=1"]
 
     - name: Move Node Exporter binary
-      command: mv "{{ node_exporter_install_dir }}/node_exporter" "{{ node_exporter_bin_path }}"
+      copy:
+        src: "/opt/node_exporter/node_exporter"
+        dest: "/usr/local/bin/node_exporter"
+        mode: '0755'
+        remote_src: yes
 
     - name: Copy Node Exporter systemd service file
       template:
         src: node_exporter.service.j2
-        dest: "{{ node_exporter_service_path }}"
+        dest: /etc/systemd/system/node_exporter.service
 
     - name: Reload systemd daemon
       systemd:
