@@ -2,20 +2,20 @@ pipeline {
     agent any
 
     tools {
-        terraform 'Terraform'  // Match this with the name set in Global Tool Configuration
-        ansible 'Ansible'      // Match this with the name set in Global Tool Configuration
+        terraform 'Terraform'  
+        ansible 'Ansible'      
     }
 
     environment {
-        TF_VAR_region = 'eu-north-1'                 // Terraform region variable
-        TF_VAR_key_name = 'ansible'                  // Terraform key pair
-        TF_IN_AUTOMATION = 'true'                    // Disable interactive prompts for Terraform
-        ANSIBLE_HOST_KEY_CHECKING = 'False'          // Disable SSH prompt for Ansible
-        ANSIBLE_REMOTE_USER = 'ubuntu'               // Remote SSH user for Ansible
+        TF_VAR_region = 'eu-north-1'                
+        TF_VAR_key_name = 'ansible'                  
+        TF_IN_AUTOMATION = 'true'                    
+        ANSIBLE_HOST_KEY_CHECKING = 'False'          
+        ANSIBLE_REMOTE_USER = 'ubuntu'               
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/harsh-mygurukulam/prom.git'
             }
@@ -31,6 +31,16 @@ pipeline {
             }
         }
 
+        stage('Terraform Validate') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+                    dir('prometheus-terraform') {
+                        sh 'terraform validate'
+                    }
+                }
+            }
+        }
+
         stage('Terraform Plan') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
@@ -41,7 +51,22 @@ pipeline {
             }
         }
 
+        stage('User Approval for Apply') {
+            steps {
+                script {
+                    def userInput = input(
+                        message: 'Proceed with Terraform Apply?', 
+                        parameters: [booleanParam(defaultValue: true, description: 'Apply changes?', name: 'apply')]
+                    )
+                    env.PROCEED_WITH_APPLY = userInput.toString()
+                }
+            }
+        }
+
         stage('Terraform Apply') {
+            when {
+                expression { env.PROCEED_WITH_APPLY == 'true' }
+            }
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
                     dir('prometheus-terraform') {
@@ -51,15 +76,46 @@ pipeline {
             }
         }
 
-        stage('Run Ansible Playbook') {
+        stage('User Choice: Destroy or Ansible?') {
+            steps {
+                script {
+                    def userChoice = input(
+                        message: 'What do you want to do next?',
+                        parameters: [
+                            choice(choices: ['Run Ansible Role', 'Destroy Infrastructure'], 
+                            description: 'Select an option', name: 'next_step')
+                        ]
+                    )
+                    env.NEXT_STEP = userChoice
+                }
+            }
+        }
+
+        stage('Run Ansible Role') {
+            when {
+                expression { env.NEXT_STEP == 'Run Ansible Role' }
+            }
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY')]) {
                     dir('prometheus-roles') {
                         sh 'chmod +x dynamic_inventory.sh'
                         sh './dynamic_inventory.sh'
                         sh 'echo Generated Inventory File:'
-                        sh 'cat inventory.ini'  // Verify the output of the inventory
+                        sh 'cat inventory.ini'
                         sh 'ansible-playbook -i inventory.ini playbook.yml --private-key=$SSH_KEY'
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Destroy') {
+            when {
+                expression { env.NEXT_STEP == 'Destroy Infrastructure' }
+            }
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+                    dir('prometheus-terraform') {
+                        sh 'terraform destroy -auto-approve'
                     }
                 }
             }
@@ -68,22 +124,30 @@ pipeline {
 
     post {
         always {
-            input message: 'Do you want to destroy the infrastructure?', ok: 'Destroy'
-            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
-                dir('prometheus-terraform') {
-                    sh 'terraform destroy -auto-approve'
-                }
+            script {
+                echo "Sending email notification..."
+                emailext(
+                    subject: "Jenkins Pipeline Execution Status",
+                    body: """
+                        <h2>Jenkins Pipeline Execution Completed</h2>
+                        <p><b>Build Status:</b> ${currentBuild.currentResult}</p>
+                        <p><b>Job:</b> ${env.JOB_NAME}</p>
+                        <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
+                        <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                    """,
+                    to: 'harshwardhandatascientist@gmail.com',
+                    mimeType: 'text/html'
+                )
             }
-            echo ' Pipeline execution completed.'
         }
         success {
             echo 'Pipeline executed successfully!'
         }
         failure {
-            echo 'pipeline failed. Check the logs for details.'
+            echo 'Pipeline failed. Check the logs for details.'
         }
         aborted {
-            echo ' Pipeline was manually aborted.'
+            echo 'Pipeline was manually aborted.'
         }
     }
 }
