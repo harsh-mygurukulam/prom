@@ -68,6 +68,26 @@ resource "aws_instance" "private_instance" {
 
   tags = { Name = "private-instance" }
 }
+resource "aws_lb_target_group" "tool_tg" {
+  name     = "tool-target-group"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = var.vpc_id
+
+  health_check {
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+}
+
+resource "aws_lb_target_group_attachment" "tool_ec2" {
+  target_group_arn = aws_lb_target_group.tool_tg.arn
+  target_id        = aws_instance.private_instance.id
+  port            = 80
+}
 
 output "public_instance_ip" {
   value = aws_instance.public_instance.public_ip
