@@ -87,7 +87,7 @@ resource "aws_security_group" "alb_sg" {
   }
 
   tags = {
-    Name = "alb-sg"
+    Name = "alb-security-group"
   }
 }
 
