@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 User=root
-ExecStart=/usr/local/bin/node_exporter --web.listen-address=:9100
+ExecStart={{ node_exporter_bin_path }}
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
-

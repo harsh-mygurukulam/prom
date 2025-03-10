@@ -1,0 +1,6 @@
+---
+- name: Install Node Exporter
+  include_tasks: install.yml
+
+- name: Tag EC2 Instance (Add Monitoring Tag)
+  include_tasks: tag_ec2.yml
