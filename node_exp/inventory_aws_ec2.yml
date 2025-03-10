@@ -4,7 +4,7 @@ regions:
 filters:
   tag:Monitoring: enabled
 hostnames:
-  - dns-name  # ✅ Use this for public IP/DNS
+  - dns-name  
 keyed_groups:
   - key: tags.Name
     prefix: tag_Name_
