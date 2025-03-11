@@ -2,17 +2,12 @@ output "vpc_id" {
   value = var.vpc_id 
 }
 
-
-
-
-
 output "alb_sg_id" {
-  value = aws_security_group.alb_sg.id
+  value = var.alb_sg_id  # ✅ Use variable instead of undeclared resource
 }
 
 output "alb_dns_name" {
-  description = "The DNS name of the ALB"
-  value       = aws_lb.app_lb.dns_name
+  value = var.alb_dns_name  # ✅ Use variable instead of undeclared resource
 }
 
 output "public_subnet_ids" {

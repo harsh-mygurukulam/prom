@@ -30,6 +30,7 @@ module "instances" {
   public_subnet_ids = module.networking.public_subnet_ids  # ✅ Add this line
   private_subnet_ids = module.networking.private_subnet_ids  # ✅ Pass as input
   alb_sg_id = module.security.alb_sg_id 
+  alb_dns_name = module.networking.alb_dns_name
 }
 
 resource "aws_lb" "app_lb" {
