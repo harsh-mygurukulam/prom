@@ -92,10 +92,12 @@ resource "aws_lb_listener_rule" "tool_ui" {
   listener_arn = aws_lb_listener.http.arn
   priority     = 100
 
-  condition {
-    field  = "path-pattern"
-    values = ["/tool-ui/*"]
+   condition {  # ✅ Corrected Condition Block
+    path_pattern {
+      values = ["/tool-ui/*"]
+    }
   }
+  
 
   action {
     type             = "forward"
