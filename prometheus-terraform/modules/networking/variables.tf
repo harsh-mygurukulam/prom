@@ -14,3 +14,7 @@ variable "alb_sg_id" {  # ✅ Fix missing security group variable
   description = "ALB Security Group ID"
   type        = string
 }
+variable "tool_tg_arn" {
+  description = "Target Group ARN for the tool"
+  type        = string
+}

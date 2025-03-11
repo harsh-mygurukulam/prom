@@ -1,6 +1,6 @@
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
-  tags = { Name = "main-vpc" }
+  tags = { Name = "prom-vpc" }
 }
 
 resource "aws_subnet" "public" {
@@ -99,7 +99,8 @@ resource "aws_lb_listener_rule" "tool_ui" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.tool_tg.arn
+    target_group_arn = var.tool_tg_arn
+
   }
 }
 

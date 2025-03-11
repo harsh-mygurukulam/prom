@@ -17,3 +17,7 @@ output "public_subnet_ids" {
 output "private_subnet_ids" {
   value = var.private_subnet_ids  # ✅ Use variable instead of undeclared resource
 }
+output "tool_tg_arn" {
+  description = "ARN of the Tool Target Group"
+  value       = aws_lb_target_group.tool_tg.arn
+}

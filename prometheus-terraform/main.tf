@@ -9,7 +9,7 @@ module "networking" {
   private_subnets = ["192.168.30.0/24", "192.168.40.0/24"]
   public_subnet_ids = module.networking.public_subnet_ids  
   alb_sg_id         = module.security.alb_sg_id           
-
+  tool_tg_arn   = module.instances.tool_tg_arn 
 }
 
 module "security" {
