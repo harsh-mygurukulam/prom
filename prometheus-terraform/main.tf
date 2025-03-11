@@ -7,6 +7,9 @@ module "networking" {
   vpc_cidr = "192.168.0.0/16"
   public_subnets  = ["192.168.10.0/24", "192.168.20.0/24"]
   private_subnets = ["192.168.30.0/24", "192.168.40.0/24"]
+  public_subnet_ids = module.networking.public_subnet_ids  
+  alb_sg_id         = module.security.alb_sg_id           
+
 }
 
 module "security" {
