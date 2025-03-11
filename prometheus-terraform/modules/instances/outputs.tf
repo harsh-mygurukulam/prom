@@ -7,6 +7,7 @@ output "alb_sg_id" {
 }
 
 output "alb_dns_name" {
+  description = "The DNS name of the ALB"
   value = var.alb_dns_name  # ✅ Use variable instead of undeclared resource
 }
 

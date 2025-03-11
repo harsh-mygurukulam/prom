@@ -22,3 +22,7 @@ variable "alb_sg_id" {
   description = "ALB Security Group ID"
   type        = string
 }
+variable "alb_dns_name" {
+  description = "The DNS name of the ALB"
+  type        = string
+}
