@@ -30,9 +30,7 @@ module "instances" {
   public_subnet_id  = module.networking.public_subnet_ids[0]  # ✅ First public subnet
   private_subnet_id = module.networking.private_subnet_ids[0] # ✅ First private subnet
 
-  public_subnet_ids  = module.networking.public_subnet_ids  # ✅ All public subnets
-  private_subnet_ids = module.networking.private_subnet_ids # ✅ All private subnets
-
+ 
   alb_sg_id     = module.security.alb_sg_id 
   alb_dns_name  = module.networking.alb_dns_name 
 }
