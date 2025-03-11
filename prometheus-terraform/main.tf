@@ -22,16 +22,19 @@ module "instances" {
   ami_id = "ami-02e2af61198e99faf"
   instance_type = "t3.micro"
   key_name = "ansible"
-  public_subnet_id  = module.networking.public_subnet_ids[0]
-  private_subnet_id = module.networking.private_subnet_ids[0]
+  
   public_sg_id  = module.security.public_sg_id
   private_sg_id = module.security.private_sg_id
   vpc_id            = module.networking.vpc_id
-  public_subnet_ids = module.networking.public_subnet_ids  # ✅ Add this line
-  private_subnet_ids = module.networking.private_subnet_ids  # ✅ Pass as input
+ 
+ public_subnet_id  = module.networking.public_subnet_ids[0]   # ✅ First public subnet
+  private_subnet_id = module.networking.private_subnet_ids[0]  # ✅ First private subnet
+
+  public_subnet_ids  = module.networking.public_subnet_ids  # ✅ Pass all public subnets
+  private_subnet_ids = module.networking.private_subnet_ids # ✅ Pass all private subnets
+
   alb_sg_id = module.security.alb_sg_id 
-  alb_dns_name = module.networking.alb_dns_name
-}
+  alb_dns_name = module.networking.alb_dns_name}
 
 resource "aws_lb" "app_lb" {
   name               = "app-load-balancer"
