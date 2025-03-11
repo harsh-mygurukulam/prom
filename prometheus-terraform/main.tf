@@ -8,9 +8,10 @@ module "networking" {
   public_subnets  = ["192.168.10.0/24", "192.168.20.0/24"]
   private_subnets = ["192.168.30.0/24", "192.168.40.0/24"]
 
-  alb_sg_id         = module.security.alb_sg_id           
-  tool_tg_arn   = module.instances.tool_tg_arn 
+  alb_sg_id   = module.security.alb_sg_id  # ✅ Pass security group ID
+  tool_tg_arn = module.instances.tool_tg_arn # ✅ Pass target group ARN
 }
+
 
 module "security" {
   source = "./modules/security"
