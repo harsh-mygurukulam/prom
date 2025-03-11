@@ -34,7 +34,8 @@ module "instances" {
   private_subnet_ids = module.networking.private_subnet_ids # ✅ Pass all private subnets
 
   alb_sg_id = module.security.alb_sg_id 
-  alb_dns_name = module.networking.alb_dns_name}
+  alb_dns_name  = module.networking.alb_dns_name 
+}
 
 resource "aws_lb" "app_lb" {
   name               = "app-load-balancer"
