@@ -40,12 +40,13 @@ resource "aws_lb" "app_lb" {
   name               = "app-load-balancer"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [module.networking.alb_sg_id] # ✅ Correct reference
-  
-  subnets            = var.public_subnet_ids
+  security_groups    = [module.security.alb_sg_id]  # ✅ Correct reference
+
+  subnets            = module.networking.public_subnet_ids  # ✅ Use networking module output
 
   enable_deletion_protection = false
 }
+
 
 
 output "public_instance_ip" {
