@@ -55,7 +55,7 @@ resource "aws_instance" "public_instance" {
   vpc_security_group_ids = [var.public_sg_id]
   iam_instance_profile = aws_iam_instance_profile.prometheus_instance_profile.name  # 🔥 Yahi Attach Ho Raha Hai
 
-  tags = { Name = "public-instance" }
+  tags = { Name = "public-inst" }
 }
 
 resource "aws_instance" "private_instance" {
@@ -66,14 +66,14 @@ resource "aws_instance" "private_instance" {
   vpc_security_group_ids = [var.private_sg_id]
   iam_instance_profile = aws_iam_instance_profile.prometheus_instance_profile.name  # 🔥 Yahi Attach Ho Raha Hai
 
-  tags = { Name = "private-instance" }
+  tags = { Name = "private-inst" }
 }
 resource "aws_lb_target_group" "tool_tg" {
   name     = "tool-target-group"
   port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
-
+  target_type = "instance"
   health_check {
     path                = "/"
     interval            = 30
