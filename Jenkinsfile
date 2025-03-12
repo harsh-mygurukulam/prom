@@ -25,11 +25,13 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
                     dir('prometheus-terraform') {
-                        sh 'terraform init'
+                        sh 'rm -rf .terraform terraform.tfstate terraform.tfstate.backup'
+                        sh 'terraform init -reconfigure'
                     }
                 }
             }
         }
+        
 
         stage('Terraform Validate') {
             steps {
@@ -98,11 +100,10 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY')]) {
                     dir('prometheus-roles') {
-                        sh 'chmod +x dynamic_inventory.sh'
-                        sh './dynamic_inventory.sh'
-                        sh 'echo Generated Inventory File:'
-                        sh 'cat inventory.ini'
-                        sh 'ansible-playbook -i inventory.ini playbook.yml --private-key=$SSH_KEY'
+                        sh 'echo "Using AWS EC2 Dynamic Inventory for Ansible"'
+                        sh 'ansible-inventory -i aws_ec2.yml --graph'  
+                        sh 'ansible-playbook -i aws_ec2.yml playbook.yml --private-key=$SSH_KEY'
+  
                     }
                 }
             }
