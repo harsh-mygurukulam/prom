@@ -22,7 +22,7 @@ resource "aws_instance" "private_instance" {
 
 # IAM Role for Prometheus EC2
 resource "aws_iam_role" "prometheus_role" {
-  name = "PrometheusEC2Role"
+  name = "Prometheus_Role"
 
   assume_role_policy = <<EOF
 {
