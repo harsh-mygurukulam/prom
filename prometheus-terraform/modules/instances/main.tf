@@ -20,6 +20,11 @@ resource "aws_instance" "private_instance" {
   tags = { Name = "private-instance" }
 }
 
+# ✅ Pehle se existing IAM Role ko fetch kar raha hai
+data "aws_iam_role" "prometheus_role" {
+  name = "Prometheus_Role"
+}
+
 # ✅ Pehle se existing IAM Policy ko fetch kar raha hai
 data "aws_iam_policy" "prometheus_policy" {
   name = "PrometheusEC2Policy"
@@ -33,25 +38,7 @@ data "aws_iam_instance_profile" "prometheus_instance_profile" {
 # Attach the existing policy to the IAM role
 resource "aws_iam_role_policy_attachment" "attach_prometheus_policy" {
   policy_arn = data.aws_iam_policy.prometheus_policy.arn
-  role       = aws_iam_role.prometheus_role.name
-}
-
-# IAM Role for Prometheus EC2 (Agar Pehle Se Hai to Skip Karna)
-resource "aws_iam_role" "prometheus_role" {
-  name = "Prometheus_Role"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": { "Service": "ec2.amazonaws.com" },
-      "Action": "sts:AssumeRole"
-   }
- ]
-}
-EOF
+  role       = data.aws_iam_role.prometheus_role.name
 }
 
 output "public_instance_ip" {
