@@ -1,6 +1,6 @@
 plugin: amazon.aws.aws_ec2
 regions:
-  - eu-north-1  # ✅ Tumhara AWS region
+  - eu-north-1
 keyed_groups:
   - key: tags.Name
     prefix: tag
@@ -8,3 +8,6 @@ filters:
   instance-state-name: running
 compose:
   ansible_host: public_ip_address
+  ansible_user: ubuntu
+  ansible_ssh_private_key_file: "{{ lookup('env', 'SSH_KEY') }}"   # 🔥 Key Jenkins env var se le raha hai
+
