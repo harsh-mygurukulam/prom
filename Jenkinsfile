@@ -16,9 +16,12 @@ pipeline {
 
     stages {
         stage('Clone Repository') {
-            steps {
-                git branch: 'main', url: 'https://github.com/harsh-mygurukulam/prom.git'
-            }
+             steps {
+        git(
+            branch: 'main',
+            credentialsId: 'github-creds',   // GitHub credentials ID (Jenkins me configure hona chahiye)
+            url: 'https://github.com/harsh-mygurukulam/prom.git'
+        )
         }
 
         stage('Terraform Init') {
