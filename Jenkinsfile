@@ -15,17 +15,11 @@ pipeline {
     }
 
     stages {
-       stage('Clone Repository') {
-    steps {
-        checkout([$class: 'GitSCM',
-            branches: [[name: '*/main']],
-            userRemoteConfigs: [[
-                credentialsId: 'github-creds',
-                url: 'https://github.com/harsh-mygurukulam/prom.git'
-            ]]
-        ])
-    }
-}
+       stage('Go to the branch') {
+            steps {
+                git branch: 'main', url: 'https://github.com/harsh-mygurukulam/prom.git'
+            }
+        }
 
 
         stage('Terraform Init') {
