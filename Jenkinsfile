@@ -99,7 +99,7 @@ pipeline {
             sleep 60 // Wait for EC2 instances to initialize
         }
         withCredentials([[
-            sshUserPrivateKey(credentialsId: 'ssh-key-prometheus', keyFileVariable: 'SSH_KEY'),
+            sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
             string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
        ] ]) {
             dir('prometheus-roles') {
