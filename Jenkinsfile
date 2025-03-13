@@ -101,10 +101,11 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY')]) {
                     dir('prometheus-roles') {
-                        sh 'echo "Using AWS EC2 Dynamic Inventory for Ansible"'
-                        sh '/usr/bin/ansible-inventory -i aws_ec2.yml --graph'
-                        sh '/usr/bin/ansible-playbook -i aws_ec2.yml playbook.yml --private-key=$SSH_KEY'
-
+                        sh 'export PATH=/home/ubuntu/.local/bin:$PATH'
+                sh 'echo "Using AWS EC2 Dynamic Inventory for Ansible"'
+                sh 'ansible-inventory -i aws_ec2.yml --graph'
+                sh 'ansible-playbook -i aws_ec2.yml playbook.yml --private-key=$SSH_KEY'
+    
                     }
                 }
             }
