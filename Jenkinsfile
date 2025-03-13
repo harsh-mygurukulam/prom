@@ -94,22 +94,30 @@ pipeline {
             }
         }
 
-        stage('Run Ansible Role') {
-            when {
-                expression { env.NEXT_STEP == 'Run Ansible Role' }
-            }
+        stage('Run Ansible Playbook') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY')]) {
-                    dir('prometheus-roles') {
-                        sh 'export PATH=/home/ubuntu/.local/bin:$PATH'
-                sh 'echo "Using AWS EC2 Dynamic Inventory for Ansible"'
-                sh 'ansible-inventory -i aws_ec2.yml --graph'
-                sh 'ansible-playbook -i aws_ec2.yml playbook.yml --private-key=$SSH_KEY'
-    
+                script {
+                    sleep 60 // Wait for EC2 instances to initialize
+                }
+                withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
+                    withCredentials([
+                        sshUserPrivateKey(credentialsId: 'ssh-key-prometheus', keyFileVariable: 'SSH_KEY'),
+                        string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
+                    ]) {
+                        dir('prometheus-roles') {
+                            sh '''
+                                echo "Using AWS EC2 Dynamic Inventory for Ansible"
+                                ANSIBLE_HOST_KEY_CHECKING=False ansible-inventory -i aws_ec2.yml --graph
+                                echo "Running Ansible Playbook..."
+                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i aws_ec2.yml playbook.yml \
+                                --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
+                            '''
+                        }
                     }
                 }
             }
         }
+    }
 
         stage('Terraform Destroy') {
             when {
