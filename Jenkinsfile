@@ -13,6 +13,7 @@ pipeline {
         ANSIBLE_HOST_KEY_CHECKING = 'False'          
         ANSIBLE_REMOTE_USER = 'ubuntu' 
         PATH = "/home/ubuntu/.local/bin:$PATH"
+        ANSIBLE_PYTHON_INTERPRETER = "/usr/bin/python3"
     }
 
     stages {
