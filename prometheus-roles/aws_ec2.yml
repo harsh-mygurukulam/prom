@@ -1,9 +1,11 @@
 plugin: amazon.aws.aws_ec2
 regions:
   - eu-north-1
-filters:
-  tag:Name:
-    - public-instance
-  instance-state-name: running
+keyed_groups:
+  - key: tags.Name
+    prefix: tag
+hostnames:
+  - ip-address
 compose:
-  ansible_host: public_ip_address
+  ansible_host: private_ip_address
+ansible_python_interpreter: /usr/bin/python3
