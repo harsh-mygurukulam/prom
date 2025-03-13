@@ -101,7 +101,7 @@ pipeline {
         withCredentials([[
             sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
             string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
-       ] ]) {
+       ] ]) {sh 'echo "Credentials loaded successfully!"'
             dir('prometheus-roles') {
                 sh '''
                     echo "Using AWS EC2 Dynamic Inventory for Ansible"
