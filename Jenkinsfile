@@ -94,31 +94,27 @@ pipeline {
         }
 
         stage('Run Ansible Playbook') {
-            when {
-                expression { env.NEXT_STEP == 'Run Ansible Role' }
-            }
-            steps {
-                script {
-                    sleep 60 // Wait for EC2 instances to initialize
-                }
-                withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
-                    withCredentials([
-                        sshUserPrivateKey(credentialsId: 'ssh-key-prometheus', keyFileVariable: 'SSH_KEY'),
-                        string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
-                    ]) {
-                        dir('prometheus-roles') {
-                            sh '''
-                                echo "Using AWS EC2 Dynamic Inventory for Ansible"
-                                ANSIBLE_HOST_KEY_CHECKING=False ansible-inventory -i aws_ec2.yml --graph
-                                echo "Running Ansible Playbook..."
-                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i aws_ec2.yml playbook.yml \
-                                --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
-                            '''
-                        }
-                    }
-                }
+    steps {
+        script {
+            sleep 60 // Wait for EC2 instances to initialize
+        }
+        withCredentials([
+            sshUserPrivateKey(credentialsId: 'ssh-key-prometheus', keyFileVariable: 'SSH_KEY'),
+            string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
+        ]) {
+            dir('prometheus-roles') {
+                sh '''
+                    echo "Using AWS EC2 Dynamic Inventory for Ansible"
+                    ANSIBLE_HOST_KEY_CHECKING=False ansible-inventory -i aws_ec2.yml --graph
+                    echo "Running Ansible Playbook..."
+                    ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i aws_ec2.yml playbook.yml \
+                    --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
+                '''
             }
         }
+    }
+}
+
 
         stage('Terraform Destroy') {
             when {
