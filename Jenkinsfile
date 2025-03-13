@@ -11,7 +11,8 @@ pipeline {
         TF_VAR_key_name = 'ansible'                  
         TF_IN_AUTOMATION = 'true'                    
         ANSIBLE_HOST_KEY_CHECKING = 'False'          
-        ANSIBLE_REMOTE_USER = 'ubuntu'               
+        ANSIBLE_REMOTE_USER = 'ubuntu' 
+        PATH = "/home/ubuntu/.local/bin:$PATH"
     }
 
     stages {
