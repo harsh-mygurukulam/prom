@@ -98,10 +98,10 @@ pipeline {
         script {
             sleep 60 // Wait for EC2 instances to initialize
         }
-        withCredentials([[
+        withCredentials([
             sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
             string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
-       ] ]) {sh 'echo "Credentials loaded successfully!"'
+        ]) {sh 'echo "Credentials loaded successfully!"'
             dir('prometheus-roles') {
                 sh '''
                     echo "Using AWS EC2 Dynamic Inventory for Ansible"
