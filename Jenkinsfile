@@ -15,14 +15,18 @@ pipeline {
     }
 
     stages {
-        stage('Clone Repository') {
-             steps {
-        git(
-            branch: 'main',
-            credentialsId: 'github-creds',   // GitHub credentials ID (Jenkins me configure hona chahiye)
-            url: 'https://github.com/harsh-mygurukulam/prom.git'
-        )
-        }
+       stage('Clone Repository') {
+    steps {
+        checkout([$class: 'GitSCM',
+            branches: [[name: '*/main']],
+            userRemoteConfigs: [[
+                credentialsId: 'github-creds',
+                url: 'https://github.com/harsh-mygurukulam/prom.git'
+            ]]
+        ])
+    }
+}
+
 
         stage('Terraform Init') {
             steps {
