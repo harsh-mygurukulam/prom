@@ -16,12 +16,11 @@ pipeline {
     }
 
     stages {
-       stage('Go to the branch') {
+        stage('Go to the branch') {
             steps {
-                git branch: 'main', url: 'https://github.com/harsh-mygurukulam/prom.git'
+                git branch: 'main', credentialsId: 'github-creds', url: 'https://github.com/harsh-mygurukulam/prom.git'
             }
         }
-
 
         stage('Terraform Init') {
             steps {
@@ -33,7 +32,6 @@ pipeline {
                 }
             }
         }
-        
 
         stage('Terraform Validate') {
             steps {
@@ -96,6 +94,9 @@ pipeline {
         }
 
         stage('Run Ansible Playbook') {
+            when {
+                expression { env.NEXT_STEP == 'Run Ansible Role' }
+            }
             steps {
                 script {
                     sleep 60 // Wait for EC2 instances to initialize
@@ -118,7 +119,6 @@ pipeline {
                 }
             }
         }
-    }
 
         stage('Terraform Destroy') {
             when {
@@ -131,8 +131,8 @@ pipeline {
                     }
                 }
             }
-        }
-    }
+        }  
+    }  
 
     post {
         always {
