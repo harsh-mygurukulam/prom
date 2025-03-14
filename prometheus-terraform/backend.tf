@@ -3,7 +3,7 @@ terraform {
     bucket         = "promtheus-harsh-bucket"
     key            = "prod/terraform.tfstate"
     region         = "eu-north-1"
-    dynamodb_table = "terraform-lock"
+    dynamodb_table = "mytable"
     encrypt        = true
   }
 }
