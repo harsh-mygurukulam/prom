@@ -94,31 +94,27 @@ pipeline {
             }
         }
 
-       stage('Run Ansible Playbook') {
+      stage('Run Ansible Playbook') {
     steps {
         script {
             sleep 60 // Wait for EC2 instances to initialize
         }
-        withCredentials([
-            string(credentialsId: 'aws-creds', variable: 'AWS_ACCESS_KEY_ID'),
-            string(credentialsId: 'aws-creds', variable: 'AWS_SECRET_ACCESS_KEY'),
-            sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
-            string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
-   ]) {
-            sh 'echo "AWS & SSH Credentials loaded successfully!"'
-            dir('prometheus-roles') {
-                sh '''
-                    export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-                    export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                    export AWS_REGION=eu-north-1
+        withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
+            withCredentials([
+                sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
+                string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
+            ]) {
+                sh 'echo "AWS & SSH Credentials loaded successfully!"'
+                dir('prometheus-roles') {
+                    sh '''
+                        echo "Using AWS EC2 Dynamic Inventory for Ansible"
+                        ANSIBLE_HOST_KEY_CHECKING=False ansible-inventory -i aws_ec2.yml --graph
 
-                    echo "Using AWS EC2 Dynamic Inventory for Ansible"
-                    ANSIBLE_HOST_KEY_CHECKING=False ansible-inventory -i aws_ec2.yml --graph
-
-                    echo "Running Ansible Playbook..."
-                    ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i aws_ec2.yml playbook.yml \
-                    --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
-                '''
+                        echo "Running Ansible Playbook..."
+                        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i aws_ec2.yml playbook.yml \
+                        --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
+                    '''
+                }
             }
         }
     }
