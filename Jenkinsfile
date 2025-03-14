@@ -100,11 +100,11 @@ pipeline {
             sleep 60 // Wait for EC2 instances to initialize
         }
         withCredentials([
-            string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY_ID'),
-            string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_ACCESS_KEY'),
+            string(credentialsId: 'aws_creds', variable: 'AWS_ACCESS_KEY_ID'),
+            string(credentialsId: 'aws_creds', variable: 'AWS_SECRET_ACCESS_KEY'),
             sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
             string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
-        ]) {
+   ]) {
             sh 'echo "AWS & SSH Credentials loaded successfully!"'
             dir('prometheus-roles') {
                 sh '''
