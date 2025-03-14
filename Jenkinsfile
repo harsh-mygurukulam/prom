@@ -94,27 +94,37 @@ pipeline {
             }
         }
 
-        stage('Run Ansible Playbook') {
+       stage('Run Ansible Playbook') {
     steps {
         script {
             sleep 60 // Wait for EC2 instances to initialize
         }
-        withCredentials([
-            sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
-            string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
-        ]) {sh 'echo "Credentials loaded successfully!"'
-            dir('prometheus-roles') {
-                sh '''
-                    echo "Using AWS EC2 Dynamic Inventory for Ansible"
-                    ANSIBLE_HOST_KEY_CHECKING=False ansible-inventory -i aws_ec2.yml --graph
-                    echo "Running Ansible Playbook..."
-                    ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i aws_ec2.yml playbook.yml \
-                    --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
-                '''
+        withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
+            withCredentials([
+                sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
+                string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
+            ]) {
+                sh 'echo "AWS & SSH Credentials loaded successfully!"'
+                dir('prometheus-roles') {
+                    sh '''
+                        echo "Setting AWS Credentials for Jenkins User"
+                        export AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id)
+                        export AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key)
+                        export AWS_REGION=eu-north-1
+
+                        echo "Using AWS EC2 Dynamic Inventory for Ansible"
+                        ANSIBLE_HOST_KEY_CHECKING=False ansible-inventory -i aws_ec2.yml --graph
+
+                        echo "Running Ansible Playbook..."
+                        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i aws_ec2.yml playbook.yml \
+                        --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
+                    '''
+                }
             }
         }
     }
 }
+
 
 
         stage('Terraform Destroy') {
