@@ -1,11 +1,22 @@
+#plugin: amazon.aws.aws_ec2
+#regions:
+ # - eu-north-1
+#keyed_groups:
+ # - key: tags.Name
+ #   prefix: tag
+#hostnames:
+ # - ip_address  # Change this from private_ip_address
+#compose:
+ # ansible_host: public_ip_address  # Change this from private_ip_address
+#ansible_python_interpreter: /usr/bin/python3
+
+
 plugin: amazon.aws.aws_ec2
 regions:
   - eu-north-1
-keyed_groups:
-  - key: tags.Name
-    prefix: tag
-hostnames:
-  - ip_address  # Change this from private_ip_address
+filters:
+  tag:Name:
+    - public-instance
+  instance-state-name: running
 compose:
-  ansible_host: public_ip_address  # Change this from private_ip_address
-ansible_python_interpreter: /usr/bin/python3
+  ansible_host: public_ip_address
