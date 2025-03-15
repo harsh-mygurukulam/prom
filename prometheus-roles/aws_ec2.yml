@@ -5,7 +5,7 @@ keyed_groups:
   - key: tags.Name
     prefix: tag
 hostnames:
-  - public_ip_address  # Change this from private_ip_address
+  - ip_address  # Change this from private_ip_address
 compose:
   ansible_host: public_ip_address  # Change this from private_ip_address
 ansible_python_interpreter: /usr/bin/python3
