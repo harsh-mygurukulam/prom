@@ -1,10 +1,21 @@
+#plugin: amazon.aws.aws_ec2
+#regions:
+#  - eu-north-1
+#filters:
+#  tag:Monitoring: enabled
+#hostnames:
+#  - dns-name  
+#keyed_groups:
+ # - key: tags.Name
+  #  prefix: tag_Name_
+
 plugin: amazon.aws.aws_ec2
 regions:
   - eu-north-1
 filters:
-  tag:Monitoring: enabled
+  instance-state-name: running  # Sirf running instances lo
 hostnames:
-  - dns-name  
+  - ip-address  # ✅ Yeh Public IP return karega
 keyed_groups:
   - key: tags.Name
     prefix: tag_Name_
