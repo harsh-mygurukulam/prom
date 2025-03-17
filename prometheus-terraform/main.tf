@@ -21,7 +21,8 @@ module "instances" {
   public_subnet_ids = module.networking.public_subnet_ids  # ✅ Pass list of subnets
   public_sg_id = module.security.public_sg_id
 }
-output "public_instance_ip" {
-  value = aws_instance.public_instance.public_ip
+output "public_instance_ips" {
+  value = aws_instance.prometheus_instances[*].public_ip  # ✅ Get all public IPs in a list
 }
+
 
