@@ -28,7 +28,8 @@ regions:
 filters:
   tag:Monitoring: enabled  # ✅ Ensures only tagged instances are fetched
 hostnames:
-  - public-ip-address  # ✅ Use 'private-ip-address' if instances are in private subnet
+  - ip-address  # ✅ This will use the **public IP address**
 keyed_groups:
   - key: tags.Name
     prefix: tag_Name_
+
