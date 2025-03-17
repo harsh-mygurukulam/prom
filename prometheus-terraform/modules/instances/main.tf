@@ -58,7 +58,7 @@ resource "aws_instance" "public_instances" {
 
   tags = {
     Name        = "public-instance-${count.index + 1}"
-    Monitoring  = "enabled"  # ✅ Ye tag correct jagah pe hai
+    Monitor  = "enabled"  # ✅ Ye tag correct jagah pe hai
   }
 }
 
