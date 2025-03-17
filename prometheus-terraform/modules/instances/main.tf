@@ -48,19 +48,20 @@ resource "aws_iam_instance_profile" "prometheus_instance_profile" {
 
 
 resource "aws_instance" "public_instances" {
-  count                  = 2  # ✅ 2 instances create honge
+  count                  = 2  
   ami                    = var.ami_id
   instance_type          = var.instance_type
-  subnet_id              = element(var.public_subnet_ids, count.index)  # ✅ Alag-alag AZs me place honge
+  subnet_id              = element(var.public_subnet_ids, count.index)  
   key_name               = var.key_name
   vpc_security_group_ids = [var.public_sg_id]
   iam_instance_profile   = aws_iam_instance_profile.prometheus_instance_profile.name
 
   tags = { Name = "public-instance-${count.index + 1}" }
+  Monitoring  = "enabled"
 }
 
-# ✅ Fix Output Block
+
 output "public_instance_ips" {
-  value = aws_instance.public_instances[*].public_ip  # ✅ Get all public IPs in a list
+  value = aws_instance.public_instances[*].public_ip  
 }
 
