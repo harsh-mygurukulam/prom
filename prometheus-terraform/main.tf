@@ -22,6 +22,3 @@ module "instances" {
   public_sg_id  = module.security.public_sg_id
 }
 
-output "public_instance_ip" {
-  value = module.instances.public_instance_ip
-}
