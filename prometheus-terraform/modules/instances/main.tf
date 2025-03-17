@@ -45,7 +45,8 @@ resource "aws_iam_instance_profile" "prometheus_instance_profile" {
   role = aws_iam_role.prometheus_role.name
 }
 
-# ✅ Create 2 EC2 Instances in Public Subnets
+
+
 resource "aws_instance" "public_instances" {
   count                  = 2  # ✅ 2 instances create honge
   ami                    = var.ami_id
@@ -58,7 +59,8 @@ resource "aws_instance" "public_instances" {
   tags = { Name = "public-instance-${count.index + 1}" }
 }
 
+# ✅ Fix Output Block
 output "public_instance_ips" {
-  value = aws_instance.prometheus_instances[*].public_ip  # ✅ Get all public IPs in a list
+  value = aws_instance.public_instances[*].public_ip  # ✅ Get all public IPs in a list
 }
 
