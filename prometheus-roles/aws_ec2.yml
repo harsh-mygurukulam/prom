@@ -11,12 +11,24 @@
 #ansible_python_interpreter: /usr/bin/python3
 
 
+#plugin: amazon.aws.aws_ec2
+#regions:
+ # - eu-north-1
+#filters:
+ # tag:Name:
+  #  - public-instance
+  #instance-state-name: running
+#compose:
+ # ansible_host: public_ip_address
+
+
 plugin: amazon.aws.aws_ec2
 regions:
   - eu-north-1
 filters:
-  tag:Name:
-    - public-instance
-  instance-state-name: running
-compose:
-  ansible_host: public_ip_address
+  tag:Monitoring: enabled  # ✅ Ensures only tagged instances are fetched
+hostnames:
+  - public-ip-address  # ✅ Use 'private-ip-address' if instances are in private subnet
+keyed_groups:
+  - key: tags.Name
+    prefix: tag_Name_
