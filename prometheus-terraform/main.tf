@@ -21,3 +21,6 @@ module "instances" {
   public_subnet_ids = module.networking.public_subnet_ids  # ✅ Pass list of subnets
   public_sg_id = module.security.public_sg_id
 }
+output "public_instance_ips" {
+  value = module.instances.public_instance_ips
+}
