@@ -59,5 +59,6 @@ resource "aws_instance" "public_instances" {
 }
 
 output "public_instance_ips" {
-  value = aws_instance.public_instances[*].public_ip
+  value = aws_instance.prometheus_instances[*].public_ip  # ✅ Get all public IPs in a list
 }
+
