@@ -22,7 +22,8 @@ module "instances" {
   public_sg_id = module.security.public_sg_id
 }
 output "public_instance_ips" {
-  value = aws_instance.prometheus_instances[*].public_ip  # ✅ Get all public IPs in a list
+  value = module.instances.public_instance_ips
 }
+
 
 
