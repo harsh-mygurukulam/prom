@@ -18,8 +18,6 @@ module "instances" {
   ami_id = "ami-02e2af61198e99faf"
   instance_type = "t3.micro"
   key_name = "ansible"
-  public_subnet_ids  = module.networking.public_subnet_ids
-  public_subnet_id  = module.networking.public_subnet_ids[0]
-  public_sg_id  = module.security.public_sg_id
+  public_subnet_ids = module.networking.public_subnet_ids  # ✅ Pass list of subnets
+  public_sg_id = module.security.public_sg_id
 }
-
