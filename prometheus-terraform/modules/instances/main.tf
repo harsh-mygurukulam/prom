@@ -48,17 +48,20 @@ resource "aws_iam_instance_profile" "prometheus_instance_profile" {
 
 
 resource "aws_instance" "public_instances" {
-  count                  = 2  
+  count                  = 2  # ✅ 2 instances create honge
   ami                    = var.ami_id
   instance_type          = var.instance_type
-  subnet_id              = element(var.public_subnet_ids, count.index)  
+  subnet_id              = element(var.public_subnet_ids, count.index)  # ✅ Alag-alag AZs me place honge
   key_name               = var.key_name
   vpc_security_group_ids = [var.public_sg_id]
   iam_instance_profile   = aws_iam_instance_profile.prometheus_instance_profile.name
 
-  tags = { Name = "public-instance-${count.index + 1}" }
-  Monitoring  = "enabled"
+  tags = {
+    Name        = "public-instance-${count.index + 1}"
+    Monitoring  = "enabled"  # ✅ Ye tag correct jagah pe hai
+  }
 }
+
 
 
 output "public_instance_ips" {
