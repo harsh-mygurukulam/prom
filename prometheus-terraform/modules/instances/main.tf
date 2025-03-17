@@ -45,34 +45,19 @@ resource "aws_iam_instance_profile" "prometheus_instance_profile" {
   role = aws_iam_role.prometheus_role.name
 }
 
-# ✅ Create Public EC2 Instance with IAM Profile
-resource "aws_instance" "public_instance" {
+# ✅ Create 2 EC2 Instances in Public Subnets
+resource "aws_instance" "public_instances" {
+  count                  = 2  # ✅ 2 instances create honge
   ami                    = var.ami_id
   instance_type          = var.instance_type
-  subnet_id              = var.public_subnet_id
+  subnet_id              = element(var.public_subnet_ids, count.index)  # ✅ Alag-alag AZs me place honge
   key_name               = var.key_name
   vpc_security_group_ids = [var.public_sg_id]
   iam_instance_profile   = aws_iam_instance_profile.prometheus_instance_profile.name
 
-  tags = { Name = "public-instance" }
+  tags = { Name = "public-instance-${count.index + 1}" }
 }
 
-# ✅ Create Private EC2 Instance with IAM Profile
-resource "aws_instance" "private_instance" {
-  ami                    = var.ami_id
-  instance_type          = var.instance_type
-  subnet_id              = var.private_subnet_id
-  key_name               = var.key_name
-  vpc_security_group_ids = [var.private_sg_id]
-  iam_instance_profile   = aws_iam_instance_profile.prometheus_instance_profile.name
-
-  tags = { Name = "private-instance" }
-}
-
-output "public_instance_ip" {
-  value = aws_instance.public_instance.public_ip
-}
-
-output "private_instance_ip" {
-  value = aws_instance.private_instance.private_ip
+output "public_instance_ips" {
+  value = aws_instance.public_instances[*].public_ip
 }
