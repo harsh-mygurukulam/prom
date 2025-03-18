@@ -22,14 +22,17 @@
  # ansible_host: public_ip_address
 
 
-plugin: amazon.aws.aws_ec2
-regions:
-  - eu-north-1
-filters:
-  tag:Monitor: enabled  # ✅ Ensures only tagged instances are fetched
-hostnames:
-  - ip-address  # ✅ This will use the **public IP address**
-keyed_groups:
-  - key: tags.Name
-    prefix: tag_Name_
+scrape_configs:
+  - job_name: 'node-exporters'
+    ec2_sd_configs:
+      - region: eu-north-1
+        port: 9100  
+        filters:
+          - name: "tag:Monitor"
+            values: ["enabled"]
+    relabel_configs:
+      - source_labels: [__meta_ec2_public_ip]
+        target_label: __address__
+        replacement: "$1:9100"
+
 
