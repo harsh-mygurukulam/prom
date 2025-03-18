@@ -94,10 +94,9 @@ pipeline {
             }
         }
 
-
-stage('Run Node Exporter Role') {
+        stage('Run Node Exporter Role') {
             when {
-                expression { env.NEXT_STEP == 'Run Ansible Roles' }
+                expression { env.NEXT_STEP == 'Run Ansible Role' } // ✅ Fixed condition
             }
             steps {
                 script {
@@ -105,13 +104,14 @@ stage('Run Node Exporter Role') {
                 }
                 withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
                     withCredentials([
-                        sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY')
+                        sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
+                        string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS') // ✅ Added missing credential
                     ]) {
                         sh 'echo "AWS & SSH Credentials loaded successfully for Node Exporter!"'
                         dir('node_exp') {  
                             sh '''
                                 echo "Running Ansible Role: Node Exporter"
-                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ../node_exp/inventory_aws_ec2.yml install.yml \
+                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_aws_ec2.yml install.yml \
                                 --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
                             '''
                         }
@@ -120,33 +120,31 @@ stage('Run Node Exporter Role') {
             }
         }
         
-      stage('Run Ansible Playbook') {
-    steps {
-        script {
-            sleep 60 // Wait for EC2 instances to initialize
-        }
-        withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
-            withCredentials([
-                sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
-                string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
-            ]) {
-                sh 'echo "AWS & SSH Credentials loaded successfully!"'
-                dir('prometheus-roles') {
-                    sh '''
-                        echo "Using AWS EC2 Dynamic Inventory for Ansible"
-                        ANSIBLE_HOST_KEY_CHECKING=False ansible-inventory -i aws_ec2.yml --graph
+        stage('Run Ansible Playbook') {
+            steps {
+                script {
+                    sleep 60 // Wait for EC2 instances to initialize
+                }
+                withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
+                    withCredentials([
+                        sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
+                        string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
+                    ]) {
+                        sh 'echo "AWS & SSH Credentials loaded successfully!"'
+                        dir('prometheus-roles') {
+                            sh '''
+                                echo "Using AWS EC2 Dynamic Inventory for Ansible"
+                                ANSIBLE_HOST_KEY_CHECKING=False ansible-inventory -i aws_ec2.yml --graph
 
-                        echo "Running Ansible Playbook..."
-                        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i aws_ec2.yml playbook.yml \
-                        --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
-                    '''
+                                echo "Running Ansible Playbook..."
+                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i aws_ec2.yml playbook.yml \
+                                --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
+                            '''
+                        }
+                    }
                 }
             }
         }
-    }
-}
-
-
 
         stage('Terraform Destroy') {
             when {
