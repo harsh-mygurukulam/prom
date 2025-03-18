@@ -83,23 +83,23 @@ pipeline {
             }
         }
 
-        stage('Check EC2 Readiness') {
-            steps {
-                withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
-                    sh '''
-                        echo "Waiting for EC2 instances to be ready..."
-                        for i in {1..10}; do
-                            if ansible-inventory -i aws_ec2.yml --graph | grep "Running"; then
-                                echo "EC2 instances are ready!"
-                                break
-                            fi
-                            echo "Still waiting..."
-                            sleep 30
-                        done
-                    '''
-                }
-            }
-        }
+      #  stage('Check EC2 Readiness') {
+       #     steps {
+        #        withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
+         #           sh '''
+          #              echo "Waiting for EC2 instances to be ready..."
+           #             for i in {1..10}; do
+            #                if ansible-inventory -i aws_ec2.yml --graph | grep "Running"; then
+             #                   echo "EC2 instances are ready!"
+              #                  break
+               #             fi
+                #            echo "Still waiting..."
+                 #           sleep 30
+                  #      done
+                   # '''
+               # }
+           # }
+       # }
 
         stage('Choose Next Action') {
             steps {
