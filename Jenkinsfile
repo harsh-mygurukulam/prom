@@ -2,53 +2,52 @@ pipeline {
     agent any
 
     tools {
-        terraform 'Terraform'  
-        ansible 'Ansible'      
+        terraform 'Terraform'
+        ansible 'Ansible'
     }
 
     environment {
-        TF_VAR_region = 'eu-north-1'                
-        TF_VAR_key_name = 'ansible'                  
-        TF_IN_AUTOMATION = 'true'                    
-        ANSIBLE_HOST_KEY_CHECKING = 'False'          
-        ANSIBLE_REMOTE_USER = 'ubuntu' 
+        TF_VAR_region = 'eu-north-1'
+        TF_VAR_key_name = 'ansible'
+        TF_IN_AUTOMATION = 'true'
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
+        ANSIBLE_REMOTE_USER = 'ubuntu'
         PATH = "/home/ubuntu/.local/bin:$PATH"
         ANSIBLE_PYTHON_INTERPRETER = "/usr/bin/python3"
     }
 
     stages {
-        stage('Go to the branch') {
+        stage('Clone Repository') {
             steps {
-                git branch: 'main', credentialsId: 'github-creds', url: 'https://github.com/harsh-mygurukulam/prom.git'
+                script {
+                    if (fileExists('prom')) {
+                        dir('prom') {
+                            sh 'git pull origin main'
+                        }
+                    } else {
+                        git branch: 'main', credentialsId: 'github-creds', url: 'https://github.com/harsh-mygurukulam/prom.git'
+                    }
+                }
             }
         }
 
-        stage('Terraform Init') {
+        stage('Terraform Initialization') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+                withCredentials([aws(credentialsId: 'aws-creds')]) {
                     dir('prometheus-terraform') {
-                        sh 'rm -rf .terraform terraform.tfstate terraform.tfstate.backup'
+                        sh 'terraform fmt'
                         sh 'terraform init -reconfigure'
                     }
                 }
             }
         }
 
-        stage('Terraform Validate') {
+        stage('Terraform Validate & Plan') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+                withCredentials([aws(credentialsId: 'aws-creds')]) {
                     dir('prometheus-terraform') {
                         sh 'terraform validate'
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Plan') {
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
-                    dir('prometheus-terraform') {
-                        sh 'terraform plan'
+                        sh 'terraform plan -out=tfplan'
                     }
                 }
             }
@@ -57,11 +56,16 @@ pipeline {
         stage('User Approval for Apply') {
             steps {
                 script {
-                    def userInput = input(
-                        message: 'Proceed with Terraform Apply?', 
-                        parameters: [booleanParam(defaultValue: true, description: 'Apply changes?', name: 'apply')]
-                    )
-                    env.PROCEED_WITH_APPLY = userInput.toString()
+                    try {
+                        def userInput = input(
+                            message: 'Proceed with Terraform Apply?', 
+                            parameters: [booleanParam(defaultValue: true, description: 'Apply changes?', name: 'apply')]
+                        )
+                        env.PROCEED_WITH_APPLY = userInput.toString()
+                    } catch (err) {
+                        env.PROCEED_WITH_APPLY = 'false'
+                        error('User did not approve Terraform Apply. Aborting pipeline.')
+                    }
                 }
             }
         }
@@ -71,22 +75,39 @@ pipeline {
                 expression { env.PROCEED_WITH_APPLY == 'true' }
             }
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+                withCredentials([aws(credentialsId: 'aws-creds')]) {
                     dir('prometheus-terraform') {
-                        sh 'terraform apply -auto-approve'
+                        sh 'terraform apply -auto-approve tfplan'
                     }
                 }
             }
         }
 
-        stage('User Choice: Destroy or Ansible?') {
+        stage('Check EC2 Readiness') {
+            steps {
+                withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
+                    sh '''
+                        echo "Waiting for EC2 instances to be ready..."
+                        for i in {1..10}; do
+                            if ansible-inventory -i aws_ec2.yml --graph | grep "Running"; then
+                                echo "EC2 instances are ready!"
+                                break
+                            fi
+                            echo "Still waiting..."
+                            sleep 30
+                        done
+                    '''
+                }
+            }
+        }
+
+        stage('Choose Next Action') {
             steps {
                 script {
                     def userChoice = input(
                         message: 'What do you want to do next?',
                         parameters: [
-                            choice(choices: ['Run Ansible Role', 'Destroy Infrastructure'], 
-                            description: 'Select an option', name: 'next_step')
+                            choice(choices: ['Run Ansible Role', 'Destroy Infrastructure'], description: 'Select an option', name: 'next_step')
                         ]
                     )
                     env.NEXT_STEP = userChoice
@@ -94,21 +115,17 @@ pipeline {
             }
         }
 
-        stage('Run Node Exporter Role') {
+        stage('Run Ansible Role - Node Exporter') {
             when {
-                expression { env.NEXT_STEP == 'Run Ansible Role' } // ✅ Fixed condition
+                expression { env.NEXT_STEP == 'Run Ansible Role' }
             }
             steps {
-                script {
-                    sleep 30 // ✅ EC2 instances ko boot hone ka time dena
-                }
                 withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
                     withCredentials([
                         sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
-                        string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS') // ✅ Added missing credential
+                        string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
                     ]) {
-                        sh 'echo "AWS & SSH Credentials loaded successfully for Node Exporter!"'
-                        dir('node_exp') {  
+                        dir('node_exp') {
                             sh '''
                                 echo "Running Ansible Role: Node Exporter"
                                 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_aws_ec2.yml install.yml \
@@ -119,18 +136,17 @@ pipeline {
                 }
             }
         }
-        
-        stage('Run Ansible Playbook') {
+
+        stage('Run Ansible Playbook - Prometheus Setup') {
+            when {
+                expression { env.NEXT_STEP == 'Run Ansible Role' }
+            }
             steps {
-                script {
-                    sleep 60 // Wait for EC2 instances to initialize
-                }
                 withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
                     withCredentials([
                         sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY'),
                         string(credentialsId: 'SMTP_PASSWORD', variable: 'SMTP_PASS')
                     ]) {
-                        sh 'echo "AWS & SSH Credentials loaded successfully!"'
                         dir('prometheus-roles') {
                             sh '''
                                 echo "Using AWS EC2 Dynamic Inventory for Ansible"
@@ -146,24 +162,23 @@ pipeline {
             }
         }
 
-        stage('Terraform Destroy') {
+        stage('Destroy Terraform Resources') {
             when {
                 expression { env.NEXT_STEP == 'Destroy Infrastructure' }
             }
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+                withCredentials([aws(credentialsId: 'aws-creds')]) {
                     dir('prometheus-terraform') {
                         sh 'terraform destroy -auto-approve'
                     }
                 }
             }
-        }  
-    }  
+        }
+    }
 
     post {
         always {
             script {
-                echo "Sending email notification..."
                 emailext(
                     subject: "Jenkins Pipeline Execution Status",
                     body: """
