@@ -94,6 +94,32 @@ pipeline {
             }
         }
 
+
+stage('Run Node Exporter Role') {
+            when {
+                expression { env.NEXT_STEP == 'Run Ansible Roles' }
+            }
+            steps {
+                script {
+                    sleep 30 // ✅ EC2 instances ko boot hone ka time dena
+                }
+                withAWS(credentials: 'aws-creds', region: 'eu-north-1') {
+                    withCredentials([
+                        sshUserPrivateKey(credentialsId: 'SSH_KEY', keyFileVariable: 'SSH_KEY')
+                    ]) {
+                        sh 'echo "AWS & SSH Credentials loaded successfully for Node Exporter!"'
+                        dir('node_exp') {  
+                            sh '''
+                                echo "Running Ansible Role: Node Exporter"
+                                ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ../node_exp/inventory_aws_ec2.yml install.yml \
+                                --private-key=$SSH_KEY -u ubuntu --extra-vars 'smtp_auth_password="${SMTP_PASS}"'
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
       stage('Run Ansible Playbook') {
     steps {
         script {
