@@ -161,30 +161,19 @@ pipeline {
     }
 
     post {
-        always {
-            script {
-                emailext(
-                    subject: "Jenkins Pipeline Execution Status",
-                    body: """
-                        <h2>Jenkins Pipeline Execution Completed</h2>
-                        <p><b>Build Status:</b> ${currentBuild.currentResult}</p>
-                        <p><b>Job:</b> ${env.JOB_NAME}</p>
-                        <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
-                        <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-                    """,
-                    to: 'harshwardhandatascientist@gmail.com',
-                    mimeType: 'text/html'
-                )
-            }
-        }
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Check the logs for details.'
-        }
-        aborted {
-            echo 'Pipeline was manually aborted.'
-        }
+    success {
+        emailext(
+            subject: "✅ SUCCESS: Jenkins Build #${env.BUILD_NUMBER}",
+            body: """
+                <h2>🎉 Jenkins Pipeline Executed Successfully! 🎉</h2>
+                <p><b>✔ Job:</b> ${env.JOB_NAME}</p>
+                <p><b>🔢 Build Number:</b> ${env.BUILD_NUMBER}</p>
+                <p><b>🔗 Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+            """,
+            to: 'harshwardhandatascientist@gmail.com',
+            mimeType: 'text/html'
+        )
     }
+}
+
 }
