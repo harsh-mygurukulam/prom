@@ -14,6 +14,7 @@ regions:
   - eu-north-1
 filters:
   instance-state-name: running  # Sirf running instances lo
+  tag:Target: enabled
 hostnames:
   - ip-address  # ✅ Yeh Public IP return karega
 keyed_groups:
