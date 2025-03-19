@@ -22,17 +22,19 @@
  # ansible_host: public_ip_address
 
 
-scrape_configs:
-  - job_name: 'node-exporters'
-    ec2_sd_configs:
-      - region: eu-north-1
-        port: 9100  
-        filters:
-          - name: "tag:Monitor"
-            values: ["enabled"]
-    relabel_configs:
-      - source_labels: [__meta_ec2_public_ip]
-        target_label: __address__
-        replacement: "$1:9100"
+plugin: amazon.aws.aws_ec2
+regions:
+  - eu-north-1
+filters:
+  - tag:Monitor
+    values: ["enabled"]
+keyed_groups:
+  - key: tags.Role
+    prefix: ""
+hostnames:
+  - ip-address
+compose:
+  ansible_host: public_ip_address
+
 
 
