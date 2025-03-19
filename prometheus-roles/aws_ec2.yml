@@ -27,12 +27,12 @@ regions:
   - eu-north-1
 filters:
    instance-state-name: running
-   tag:Monitor: enabled
+   tag:Monitoring: enabled
 keyed_groups:
   - key: tags.Role
     prefix: ""
 hostnames:
-  - public-ip-address
+  - ip-address
 compose:
   ansible_host: public_ip_address
 
