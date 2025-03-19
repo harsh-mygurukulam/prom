@@ -58,7 +58,7 @@ resource "aws_instance" "public_instances" {
 
   tags = {
     Name        = "public-instance-${count.index + 1}"
-    Target  = "enabled"  # ✅ Ye tag correct jagah pe hai
+    Promethues  = "enabled"  # ✅ Ye tag correct jagah pe hai
   }
 }
 
