@@ -26,7 +26,7 @@ scrape_configs:
       - region: eu-north-1
         port: 9100  
         filters:
-          - name: "tag:Monitor"
+          - name: "tag:Target"
             values: ["enabled"]
     relabel_configs:
       - source_labels: [__meta_ec2_public_ip]
