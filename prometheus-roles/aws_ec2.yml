@@ -27,7 +27,7 @@ regions:
   - eu-north-1
 filters:
    instance-state-name: running
-   tag:Monitoring: enabled
+   tag:Prometheus: enabled
 keyed_groups:
   - key: tags.Role
     prefix: ""
