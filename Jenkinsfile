@@ -163,12 +163,12 @@ pipeline {
     post {
     success {
         emailext(
-            subject: "✅ SUCCESS: Jenkins Build #${env.BUILD_NUMBER}",
+            subject: " SUCCESS: Jenkins Build #${env.BUILD_NUMBER}",
             body: """
-                <h2>🎉 Jenkins Pipeline Executed Successfully! 🎉</h2>
+                <h2>Jenkins Pipeline Executed Successfully!</h2>
                 <p><b>✔ Job:</b> ${env.JOB_NAME}</p>
-                <p><b>🔢 Build Number:</b> ${env.BUILD_NUMBER}</p>
-                <p><b>🔗 Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
+                <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
             """,
             to: 'harshwardhandatascientist@gmail.com',
             mimeType: 'text/html'
