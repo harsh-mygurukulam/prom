@@ -8,7 +8,7 @@ groups:
           severity: critical
         annotations:
           summary: "High CPU Usage"
-          description: "CPU usage is above 80% for {{ $labels.instance }}"
+          description: "CPU usage is above 80% for {{ '{{' }} $labels.instance {{ '}}' }}"
 
       - alert: InstanceDown
         expr: up == 0
@@ -16,5 +16,5 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Instance {{ $labels.instance }} is down"
-          description: "{{ $labels.instance }} is not reachable for more than 1 minute"
+          summary: "Instance {{ '{{' }} $labels.instance {{ '}}' }} is down"
+          description: "{{ '{{' }} $labels.instance {{ '}}' }} is not reachable for more than 1 minute"
