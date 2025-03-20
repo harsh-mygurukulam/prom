@@ -32,38 +32,15 @@
 
 
 
+groups:
+  - name: test_alert
+    rules:
+      - alert: "Test Alert"
+        expr: vector(1)
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Test Alert Triggered"
+          description: "This is a test alert."
 
-global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
-
-scrape_configs:
-  - job_name: 'ec2-dynamic'
-    ec2_sd_configs:
-      - region: eu-north-1
-        port: 9100
-        filters:
-          - name: "tag:Target"
-            values: ["enabled"]
-
-    relabel_configs:
-      # ✅ Public IP ko address ke tarah set karna
-      - source_labels: [__meta_ec2_public_ip]
-        target_label: __address__
-        replacement: "$1:9100"
-
-      # ✅ Instance ka naam set karna `instance` label me
-      - source_labels: [__meta_ec2_tag_Name]
-        target_label: instance
-
-      # ✅ Har instance ke liye ek alag-alag job name generate karna
-      - source_labels: [__meta_ec2_tag_Name]
-        target_label: job
-
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets: ["localhost:9093"]
-
-rule_files:
-  - /etc/prometheus/rules.yml
