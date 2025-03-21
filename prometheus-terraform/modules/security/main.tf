@@ -5,28 +5,28 @@ resource "aws_security_group" "public_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # ✅ SSH Access
+    cidr_blocks = ["0.0.0.0/0"]  
   }
 
   ingress {
     from_port   = 9090
     to_port     = 9090
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # ✅ Prometheus Web UI
+    cidr_blocks = ["0.0.0.0/0"]  
   }
 
   ingress {
     from_port   = 9093
     to_port     = 9093
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # ✅ Alertmanager
+    cidr_blocks = ["0.0.0.0/0"]  
   }
 
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]  # ✅ Allow all outbound traffic
+    cidr_blocks = ["0.0.0.0/0"]  
   }
 
   tags = {
@@ -34,7 +34,6 @@ resource "aws_security_group" "public_sg" {
   }
 }
 
-# ✅ Remove private_sg, since no private instances exist.
 
 output "public_sg_id" {
   value = aws_security_group.public_sg.id
