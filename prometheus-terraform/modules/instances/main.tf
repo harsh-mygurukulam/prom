@@ -57,7 +57,7 @@ resource "aws_instance" "public_instances" {
   iam_instance_profile   = aws_iam_instance_profile.prometheus_instance_profile.name
 
   tags = {
-    Name        = "public-instance-${count.index + 1}"
+    Name        = "promethues_server-${count.index + 1}"
     Prometheus  = "enabled"  
   }
 }
