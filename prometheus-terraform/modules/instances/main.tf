@@ -1,4 +1,4 @@
-# ✅ Create a new IAM Role for EC2 instances
+
 resource "aws_iam_role" "prometheus_role" {
   name = "PrometheusMonitoringRole"
 
@@ -12,7 +12,7 @@ resource "aws_iam_role" "prometheus_role" {
   })
 }
 
-# ✅ Create a new IAM Policy for EC2 monitoring
+
 resource "aws_iam_policy" "prometheus_policy" {
   name        = "PrometheusEC2MonitoringPolicy"
   description = "Allows EC2 instances to be discovered by Prometheus"
@@ -33,13 +33,13 @@ resource "aws_iam_policy" "prometheus_policy" {
   })
 }
 
-# ✅ Attach the IAM Policy to the IAM Role
+
 resource "aws_iam_role_policy_attachment" "attach_prometheus_policy" {
   policy_arn = aws_iam_policy.prometheus_policy.arn
   role       = aws_iam_role.prometheus_role.name
 }
 
-# ✅ Create IAM Instance Profile
+
 resource "aws_iam_instance_profile" "prometheus_instance_profile" {
   name = "PrometheusMonitoringProfile"
   role = aws_iam_role.prometheus_role.name
@@ -48,17 +48,17 @@ resource "aws_iam_instance_profile" "prometheus_instance_profile" {
 
 
 resource "aws_instance" "public_instances" {
-  count                  = 2  # ✅ 2 instances create honge
+  count                  = 2  
   ami                    = var.ami_id
   instance_type          = var.instance_type
-  subnet_id              = element(var.public_subnet_ids, count.index)  # ✅ Alag-alag AZs me place honge
+  subnet_id              = element(var.public_subnet_ids, count.index)  
   key_name               = var.key_name
   vpc_security_group_ids = [var.public_sg_id]
   iam_instance_profile   = aws_iam_instance_profile.prometheus_instance_profile.name
 
   tags = {
     Name        = "public-instance-${count.index + 1}"
-    Prometheus  = "enabled"  # ✅ Ye tag correct jagah pe hai
+    Prometheus  = "enabled"  
   }
 }
 
