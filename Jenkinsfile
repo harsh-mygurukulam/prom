@@ -20,13 +20,9 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    if (fileExists('prom')) {
-                        dir('prom') {
-                            sh 'git pull origin main'
-                        }
-                    } else {
+                  
                         git branch: 'main', credentialsId: 'github-creds', url: 'https://github.com/harsh-mygurukulam/prom.git'
-                    }
+                  
                 }
             }
         }
