@@ -83,8 +83,6 @@ pipeline {
             }
         }
 
-     
-
         stage('Choose Next Action') {
             steps {
                 script {
@@ -161,19 +159,37 @@ pipeline {
     }
 
     post {
-    success {
-        emailext(
-            subject: " SUCCESS: Jenkins Build #${env.BUILD_NUMBER}",
-            body: """
-                <h2>Jenkins Pipeline Executed Successfully!</h2>
-                <p><b>✔ Job:</b> ${env.JOB_NAME}</p>
-                <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
-                <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-            """,
-            to: 'harshwardhandatascientist@gmail.com',
-            mimeType: 'text/html'
-        )
-    }
-}
+        success {
+            emailext(
+                subject: "SUCCESS: Jenkins Build #${env.BUILD_NUMBER}",
+                body: """
+                    <h2> Jenkins Pipeline Executed Successfully!</h2>
+                    <p><b>✔ Job:</b> ${env.JOB_NAME}</p>
+                    <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
+                    <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                """,
+                to: 'harshwardhandatascientist@gmail.com',
+                mimeType: 'text/html'
+            )
+        }
 
+        failure {
+            script {
+                def logs = sh(script: 'tail -n 50 ${WORKSPACE}/logs/jenkins.log', returnStdout: true).trim()
+                emailext(
+                    subject: "FAILURE: Jenkins Build #${env.BUILD_NUMBER}",
+                    body: """
+                        <h2>Jenkins Pipeline Failed!</h2>
+                        <p><b>Job:</b> ${env.JOB_NAME}</p>
+                        <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
+                        <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                        <p><b>Error Logs:</b></p>
+                        <pre>${logs}</pre>
+                    """,
+                    to: 'harshwardhandatascientist@gmail.com',
+                    mimeType: 'text/html'
+                )
+            }
+        }
+    }
 }
